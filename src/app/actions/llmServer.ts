@@ -3,8 +3,11 @@
 
 import express, { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
+import dotenv from 'dotenv';
+import cors from 'cors';
+import { processLLMPrompt } from './api/evaluate'; // Adjust path if needed
 
-const { processLLMPrompt } = require('./utils/llmUtils'); // Import the function
+const { processLLMPrompt } = require('./api/evaluate'); // Import the function
 
 const app = express();
 const prisma = new PrismaClient();
