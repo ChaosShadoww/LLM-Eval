@@ -5,11 +5,11 @@ import { PrismaClient } from '@prisma/client';
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 const prisma = new PrismaClient();
 
-export async function main() {
+export async function processLLMPrompt(prompt) {
   try {
-    const chatCompletion = await getGroqChatCompletion();
+    const chatCompletion = await getGroqChatCompletion(prompt);
     const llmResponse = chatCompletion.choices[0]?.message?.content || "";
-    const prompt = chatCompletion.messages[0].content; // Extract the prompt
+    //const prompt = chatCompletion.messages[0].content; // Extract the prompt
 
     // Store prompt and initial response
     const dbEntry = await prisma.experiment.create({
@@ -25,6 +25,8 @@ export async function main() {
     //for the llm eval
     const evaluation = await llmAsAJudge(llmResponse, dbEntry.id); //Pass dbEntry.id
     console.log("Evaluation:", evaluation);
+
+    return { llmResponse, evaluation }; // Return both response and evaluation
   } catch (error) {
     console.error("An error occured:", error);
   } finally {
@@ -33,16 +35,9 @@ export async function main() {
 }
 
 // test funciton to get a response from llm
-export async function getGroqChatCompletion() {
+export async function getGroqChatCompletion(prompt) {
   return groq.chat.completions.create({
-    messages: [
-      {
-        role: "user",
-
-        content: "Explain the importance of fast language models",
-      },
-
-    ],
+    prompt: prompt,
     model: "llama3-8b-8192",
   });
 }
@@ -89,13 +84,7 @@ export async function llmAsAJudge(response: string): Promise<string> {
 
     const evaluationResponse = await groq.chat.completions.create({
 
-      messages: [
-        {
-          role: "user",
-
-          content: evaluationPrompt,
-        },
-      ],
+      prompt: evaluationPrompt,
       model: "gemma2-9b-it", // The model used for evaluation
     });
 
@@ -143,5 +132,7 @@ function parseScores(evaluation: string): { relevance: number | null, factuality
     return scores;
 
 }
+
+//export { processLLMPrompt };
 
 
