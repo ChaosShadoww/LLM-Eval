@@ -32,6 +32,7 @@ export async function processLLMPrompt(prompt: string): Promise<any[]> {
         data: {
           prompt,
           model,
+          responseTime,
           response: llmResponse,
           evaluation,
         

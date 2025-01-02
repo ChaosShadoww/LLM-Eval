@@ -18,7 +18,7 @@ model Experiment {
   prompt        String
   model         String
   response      String
-  responseTime  String
+  responseTime  Int?
   evaluation    String?
   relevanceScore    Int?
   factualityScore  Int?
