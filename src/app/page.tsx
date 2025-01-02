@@ -15,7 +15,7 @@ function LLMEvaluator() {
     setLlmResults([]); // Reset results before evaluation
     
     try {
-      const response = await fetch("/api/evaluate/route", {
+      const response = await fetch("/api/evaluate", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -101,7 +101,7 @@ export async function llmAsAJudge(response: string): Promise<string> {
 dotenv.config();
 
 const app = express();
-const port = 3001; 
+const port = 3000; 
 
 app.use(express.json());
 app.use(cors());
@@ -116,8 +116,9 @@ export const evaluatePromptHandler = async (req: Request, res: Response) => {
 
   try {
     const results = await processLLMPrompt(prompt);
+    res.json({ results });
     res.setHeader('Content-Type', 'application/json');
-    return res.json({ results });
+    return;
   } catch (error) {
     console.error("Error during prompt evaluation:", error);
     res.setHeader('Content-Type', 'application/json');
