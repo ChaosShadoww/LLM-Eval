@@ -1,43 +1,40 @@
-"use server";
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 function LLMEvaluator() {
+  const [llmResults, setLlmResults] = useState<any[]>([]); // State for LLM results
   const [inputText, setInputText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [llmResponse, setLlmResponse] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
-    setLlmResponse(null);
+    setLlmResults([]); // Reset results before evaluation
     
     try {
-      const response = await fetch("/api/evaluate", { // Your backend endpoint
+      const response = await fetch("/api/evaluate", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ prompt: inputText }), // Send the prompt in the request body
+        body: JSON.stringify({ prompt: inputText }),
       });
-  
+
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(`HTTP error! status: ${response.status}`);
+        throw new Error(`Error: ${errorData.message || "Evaluation failed"}`);
       }
-  
+
       const data = await response.json();
-      const llmResponse = data.llmResponse; // Access the LLM response from the backend
+      setLlmResults(data.results); // Set the LLM results
     } catch (error: any) {
-      console.error("Error sending prompt:", error);
+      console.error("Error evaluating prompt:", error);
       setError(error.message || "An error occurred.");
     } finally {
       setIsLoading(false);
     }
   };
-    
 
   return (
     <div className="min-h-screen flex flex-col justify-between p-8 bg-[#001f3f]">
@@ -48,13 +45,24 @@ function LLMEvaluator() {
           </div>
         )}
 
-        {llmResponse && (
-          <div className="w-full max-w-2xl rounded-lg overflow-hidden shadow-lg bg-gray-100 p-4"> {/* Added background for better visibility */}
-            <h2 className="text-lg font-bold mb-2">Evaluation Result:</h2> {/* Added a heading */}
-            <pre className="whitespace-pre-wrap">{llmResponse}</pre> {/* Use <pre> for preserving formatting */}
+        {/* Render LLM Results */}
+        {llmResults.length > 0 && (
+          <div className="w-full max-w-4xl p-4 bg-gray-100 border border-gray-200 rounded-lg">
+            <h2 className="text-lg font-bold mb-2">Evaluation Results:</h2>
+            <div className="grid grid-cols-2 gap-4">
+              {llmResults.map((result, index) => (
+                <div key={index} className="p-4 bg-white shadow-md rounded-lg">
+                  <h3 className="text-md font-semibold">{result.model}</h3>
+                  <p>{result.response}</p>
+                  <pre>{result.evaluation}</pre>
+                  <p>Response Time: {result.responseTime} ms</p>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
+        {/* Input Form */}
         <form onSubmit={handleSubmit} className="w-full">
           <div className="flex gap-2">
             <input
@@ -63,13 +71,13 @@ function LLMEvaluator() {
               placeholder="Enter your prompt for LLM evaluation..."
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
-              className="flex-1 p-3 rounded-lg bg-gray-200 border border-black/[.08] dark:border-white/[.145] focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
+              className="flex-1 p-3 rounded-lg bg-gray-200 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
               disabled={isLoading}
             />
             <button
               type="submit"
               disabled={isLoading}
-              className="px-6 py-3 rounded-lg bg-foreground text-background hover:bg-[#383838] dark:hover:bg-[#ccc] transition-colors disabled:opacity-50"
+              className="px-6 py-3 rounded-lg bg-blue-500 text-white hover:bg-blue-600 transition-colors disabled:opacity-50"
             >
               {isLoading ? "Evaluating..." : "Evaluate"}
             </button>
