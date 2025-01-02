@@ -5,9 +5,10 @@ import { PrismaClient } from '@prisma/client';
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 const prisma = new PrismaClient();
 
-export async function processLLMPrompt(prompt) {
+export async function processLLMPrompt(prompt: string): Promise<{ llmResponse: string; evaluation: string }>  {
   try {
     const chatCompletion = await getGroqChatCompletion(prompt);
+    
     const llmResponse = chatCompletion.choices[0]?.message?.content || "";
     //const prompt = chatCompletion.messages[0].content; // Extract the prompt
 
@@ -29,21 +30,28 @@ export async function processLLMPrompt(prompt) {
     return { llmResponse, evaluation }; // Return both response and evaluation
   } catch (error) {
     console.error("An error occured:", error);
+    throw new Error("LLM processing failed");
   } finally {
     await prisma.$disconnect();
   }
 }
 
 // test funciton to get a response from llm
-export async function getGroqChatCompletion(prompt) {
-  return groq.chat.completions.create({
-    prompt: prompt,
-    model: "llama3-8b-8192",
-  });
+export async function getGroqChatCompletion(prompt: string): Promise<Response | null> {
+  try {
+      const response = await groq.chat.completions.create({
+          messages: [{ role: "user", content: prompt }], // Use messages array
+          model: "llama3-8b-8192",
+      });
+      return response;
+  } catch (error) {
+      console.error("Error calling Groq API:", error);
+      return null;
+  }
 }
 
 //function to judge other llm
-export async function llmAsAJudge(response: string): Promise<string> {
+export async function llmAsAJudge(response: string, experimentId: number): Promise<string> {
   if (!response) {
     return "No response provided to evaluate.";
   }

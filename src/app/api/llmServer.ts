@@ -5,24 +5,22 @@ import express, { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import dotenv from 'dotenv';
 import cors from 'cors';
-import { processLLMPrompt } from './api/evaluate'; // Adjust path if needed
 
 const { processLLMPrompt } = require('./api/evaluate'); // Import the function
 
+dotenv.config();
+
 const app = express();
 const prisma = new PrismaClient();
-const port = 3001; // Choose a different port than your main app
+const port = 3001; 
 
 
-const { evaluatePrompt } = require('./api/evaluate/route.ts'); // Adjust path as needed
-require('dotenv').config();
+const { evaluatePrompt } = require('./api/evaluate'); // Adjust path as needed
 app.use(express.json());
-const cors = require('cors');
 app.use(cors());
 
-app.use(express.json());
 
-app.post('/api/evaluate', async (req: Request, res: Response) => {
+app.post('/api/evaluate', async (req, res) => {
     try {
         const { prompt } = req.body;
         if (!prompt) {
