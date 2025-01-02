@@ -1,6 +1,9 @@
 import Groq from "groq-sdk";
 import { PrismaClient } from "@prisma/client";
 import { Request, Response } from "express";
+import express from 'express';
+import dotenv from 'dotenv';
+import cors from 'cors';
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 const prisma = new PrismaClient();
@@ -93,6 +96,15 @@ export async function llmAsAJudge(response: string): Promise<string> {
   }
 }
 
+
+dotenv.config();
+
+const app = express();
+const port = 3001; 
+
+app.use(express.json());
+app.use(cors());
+
 // Endpoint to evaluate LLM prompts
 export const evaluatePromptHandler = async (req: Request, res: Response) => {
   const { prompt } = req.body;
@@ -103,9 +115,17 @@ export const evaluatePromptHandler = async (req: Request, res: Response) => {
 
   try {
     const results = await processLLMPrompt(prompt);
+    res.setHeader('Content-Type', 'application/json');
     return res.json({ results });
   } catch (error) {
     console.error("Error during prompt evaluation:", error);
+    res.setHeader('Content-Type', 'application/json');
     return res.status(500).json({ message: "An error occurred while processing the prompt." });
   }
 };
+
+
+
+app.listen(port, () => {
+  console.log(`Analytics API listening at http://localhost:${port}`);
+});

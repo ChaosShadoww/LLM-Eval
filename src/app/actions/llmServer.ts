@@ -20,7 +20,7 @@ app.use(express.json());
 app.use(cors());
 
 
-app.post('/api/evaluate', async (req, res) => {
+app.post('/api/evaluate/route', async (req, res) => {
     try {
         const { prompt } = req.body;
         if (!prompt) {
