@@ -2,8 +2,9 @@ import Groq from "groq-sdk";
 import { PrismaClient } from "@prisma/client";
 import { Request, Response } from "express";
 import express from 'express';
-import dotenv from 'dotenv';
+require('dotenv').config();
 import cors from 'cors';
+
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 const prisma = new PrismaClient();
