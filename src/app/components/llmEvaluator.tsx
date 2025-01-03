@@ -1,11 +1,12 @@
 "use client"
 
 import { useState, useEffect } from "react";
+import { processLLMPrompt } from "../api/evaluate/route";
 
 interface LlmEvaluatorProps {
     evaluatePrompt: (
         text: string
-    ) => Promise<{ success: boolean; Url?: string; error?: string }>;
+    ) => Promise<{ success: boolean; data: string; error?: string }>;
 
 }
 
@@ -21,6 +22,7 @@ export default function llmEvaluator({ evaluatePrompt }: LlmEvaluatorProps) {
     setError(null);
     setLlmResults([]); // Reset results before evaluation
     
+    
     try {
       
       const response = await evaluatePrompt(inputText);
@@ -31,8 +33,9 @@ export default function llmEvaluator({ evaluatePrompt }: LlmEvaluatorProps) {
       }
       
       if (response) {
-        
+        processLLMPrompt(response.data);
       }
+     
 
     } catch (error) {
         console.error("Error:", error);

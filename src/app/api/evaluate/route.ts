@@ -98,33 +98,33 @@ export async function llmAsAJudge(response: string): Promise<string> {
 }
 
 
-dotenv.config();
+// dotenv.config();
 
-const app = express();
-const port = 3000; 
+// const app = express();
+// const port = 3000; 
 
-app.use(express.json());
-app.use(cors());
+// app.use(express.json());
+// app.use(cors());
 
-// Endpoint to evaluate LLM prompts
-export const evaluatePromptHandler = async (req: Request, res: Response) => {
-  const { prompt } = req.body;
+// // Endpoint to evaluate LLM prompts
+// export const evaluatePromptHandler = async (req: Request, res: Response) => {
+//   const { prompt } = req.body;
 
-  if (!prompt) {
-    return res.status(400).json({ message: "Prompt is required." });
-  }
+//   if (!prompt) {
+//     return res.status(400).json({ message: "Prompt is required." });
+//   }
 
-  try {
-    const results = await processLLMPrompt(prompt);
-    res.json({ results });
-    // res.setHeader('Content-Type', 'application/json');
-    // return;
-  } catch (error) {
-    console.error("Error during prompt evaluation:", error);
-    res.setHeader('Content-Type', 'application/json');
-    return res.status(500).json({ message: "An error occurred while processing the prompt." });
-  }
-};
+//   try {
+//     const results = await processLLMPrompt(prompt);
+//     res.json({ results });
+//     // res.setHeader('Content-Type', 'application/json');
+//     // return;
+//   } catch (error) {
+//     console.error("Error during prompt evaluation:", error);
+//     res.setHeader('Content-Type', 'application/json');
+//     return res.status(500).json({ message: "An error occurred while processing the prompt." });
+//   }
+// };
 
 
 

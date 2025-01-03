@@ -6,7 +6,7 @@ export async function evaluatePrompt(text: string) {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "X-API-SECRET": process.env.API_SECRET || "",
+            "X-API-SECRET": process.env.GROQ_API_KEY || "",
           },
           body: JSON.stringify({ text }),
         });
