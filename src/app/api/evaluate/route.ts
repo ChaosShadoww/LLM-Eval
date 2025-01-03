@@ -117,8 +117,8 @@ export const evaluatePromptHandler = async (req: Request, res: Response) => {
   try {
     const results = await processLLMPrompt(prompt);
     res.json({ results });
-    res.setHeader('Content-Type', 'application/json');
-    return;
+    // res.setHeader('Content-Type', 'application/json');
+    // return;
   } catch (error) {
     console.error("Error during prompt evaluation:", error);
     res.setHeader('Content-Type', 'application/json');
@@ -128,6 +128,6 @@ export const evaluatePromptHandler = async (req: Request, res: Response) => {
 
 
 
-app.listen(port, () => {
-  console.log(`Analytics API listening at http://localhost:${port}`);
-});
+// app.listen(port, () => {
+//   console.log(`Analytics API listening at http://localhost:${port}`);
+// });
