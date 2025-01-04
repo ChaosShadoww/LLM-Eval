@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react";
-import { processLLMPrompt } from "../api/evaluate/route";
+import { POST } from "../api/evaluate/route";
 
 interface LlmEvaluatorProps {
     evaluatePrompt: (
@@ -32,9 +32,9 @@ export default function llmEvaluator({ evaluatePrompt }: LlmEvaluatorProps) {
         throw new Error(response.error || "Failed to evaluate prompt");
       }
       
-      if (response) {
-        processLLMPrompt(response.data);
-      }
+      // if (response) {
+      //   POST(response.data);
+      // }
      
 
     } catch (error) {

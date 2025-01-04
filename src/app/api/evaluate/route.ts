@@ -1,64 +1,78 @@
 import Groq from "groq-sdk";
 import { PrismaClient } from "@prisma/client";
-import { Request, Response } from "express";
-import express from 'express';
+import { NextResponse } from "next/server";
 require('dotenv').config();
-import cors from 'cors';
 
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 const prisma = new PrismaClient();
 
-// Function to process LLM prompts
-export async function processLLMPrompt(prompt: string): Promise<any[]> {
-  const llms = ["llama3-8b-8192", "gemma2-9b-it"]; // Add more LLMs as needed
-  const results = [];
 
-  for (const model of llms) {
-    const startTime = Date.now();
 
-    try {
-      // Get the LLM response
-      const response = await groq.chat.completions.create({
-        messages: [{ role: "user", content: prompt }],
-        model,
-      });
+export async function POST(request: Request) {
+  try {
+    const body = await request.json();
+    const { text } = body;
 
-      const responseTime = Date.now() - startTime;
-      const llmResponse = response.choices[0]?.message?.content || "No response.";
-      const evaluation = await llmAsAJudge(llmResponse);
+    // Call your LLM API here
+    const url = new URL('https://api.openai.com/v1/chat/completions');
 
-      // Save experiment data to the database
-      await prisma.experiment.create({
-        data: {
-          prompt,
-          model,
-          responseTime,
-          response: llmResponse,
-          evaluation,
-        
-        },
-      });
+    const response = await fetch(url.toString(), {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,  // Correct header
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        // "x-API-Key": process.env.OPENAI_API_KEY || "",
+        // "Content-Type": "application/json",
+        // Accept: "application/json",
+      },
+      body: JSON.stringify({
+        model: "gpt-3.5-turbo", 
+        prompt: text }),
+    });
 
-      results.push({
-        model,
-        response: llmResponse,
-        evaluation,
-        responseTime,
-      });
-    } catch (error) {
-      console.error(`Error processing model ${model}:`, error);
-      results.push({
-        model,
-        response: "Error generating response.",
-        evaluation: "Evaluation could not be performed.",
-        responseTime: null,
-      });
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("API Response:", errorText);
+      throw new Error(
+        `HTTP error! status: ${response.status}, message: ${errorText}`
+      );
     }
-  }
 
-  return results;
+    const result = await response.json();
+
+    // Evaluate the LLM response using the llmAsAJudge function
+    const evaluation = await llmAsAJudge(result.output);
+
+    // Store the prompt, response, and evaluation in the database
+    const savedRecord = await prisma.result.create({
+      data: {
+        prompt: text,
+        output: result.output,
+        evaluation,
+    
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      output: result.output, // Assuming the API returns the output as "output"
+      evaluation,
+      recordId: savedRecord.id, // Return the ID of the saved record
+    });
+  } catch (error) {
+    console.error("Error:", error);
+    return NextResponse.json(
+      { success: false, error: "Failed to process request" },
+      { status: 500 }
+    );
+  } finally {
+    await prisma.$disconnect();
+  }
 }
+
+
 
 // Function to evaluate an LLM's response
 export async function llmAsAJudge(response: string): Promise<string> {
@@ -99,36 +113,3 @@ export async function llmAsAJudge(response: string): Promise<string> {
 }
 
 
-// dotenv.config();
-
-// const app = express();
-// const port = 3000; 
-
-// app.use(express.json());
-// app.use(cors());
-
-// // Endpoint to evaluate LLM prompts
-// export const evaluatePromptHandler = async (req: Request, res: Response) => {
-//   const { prompt } = req.body;
-
-//   if (!prompt) {
-//     return res.status(400).json({ message: "Prompt is required." });
-//   }
-
-//   try {
-//     const results = await processLLMPrompt(prompt);
-//     res.json({ results });
-//     // res.setHeader('Content-Type', 'application/json');
-//     // return;
-//   } catch (error) {
-//     console.error("Error during prompt evaluation:", error);
-//     res.setHeader('Content-Type', 'application/json');
-//     return res.status(500).json({ message: "An error occurred while processing the prompt." });
-//   }
-// };
-
-
-
-// app.listen(port, () => {
-//   console.log(`Analytics API listening at http://localhost:${port}`);
-// });

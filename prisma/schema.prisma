@@ -13,16 +13,17 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Experiment {
+model Result {
   id            Int      @id @default(autoincrement())
   prompt        String
-  model         String
-  response      String
-  responseTime  Int?
+  // model         String
+  // response      String
+  output        String
+  // responseTime  Int?
   evaluation    String?
-  relevanceScore    Int?
-  factualityScore  Int?
-  comprehensivenessScore Int?
-  clarityScore  Int?
-  createdAt     DateTime @default(now())
+  // relevanceScore    Int?
+  // factualityScore  Int?
+  // comprehensivenessScore Int?
+  // clarityScore  Int?
+  // createdAt     DateTime @default(now())
 }
